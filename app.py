@@ -3,6 +3,7 @@ import streamlit as st
 from services.document_manager import DocumentManager
 from services.rag import ask_question
 from services.summary import summarize_document
+from services.actions import extract_action_items
 
 document_manager = DocumentManager()
 
@@ -125,4 +126,7 @@ with tab_actions:
         if not st.session_state.pdf_indexed:
             st.error("Upload en indexeer eerst een PDF.")
         else:
-            st.info("Actiepunten bouwen we daarna.")
+            with st.spinner("Actiepunten worden gezocht..."):
+                actions = extract_action_items()
+
+            st.markdown(actions)

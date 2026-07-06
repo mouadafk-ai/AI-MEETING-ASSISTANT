@@ -1,0 +1,42 @@
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+
+from services.vector_store import get_vector_store
+
+load_dotenv()
+
+
+def ask_question(question: str) -> str:
+
+    vector_store = get_vector_store()
+
+    docs = vector_store.similarity_search(
+        query=question,
+        k=3,
+    )
+
+    context = "\n\n".join([doc.page_content for doc in docs])
+
+    prompt = f"""
+Je bent een AI Meeting Assistant.
+
+Beantwoord de vraag alleen op basis van de onderstaande context.
+Als het antwoord niet in de context staat, zeg dan eerlijk dat je het niet weet.
+
+Context:
+{context}
+
+Vraag:
+{question}
+
+Antwoord:
+"""
+
+    llm = ChatOpenAI(
+        model="gpt-5-mini",
+        temperature=0,
+    )
+
+    response = llm.invoke(prompt)
+
+    return response.content

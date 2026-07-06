@@ -1,6 +1,9 @@
 import streamlit as st
-from services.loader import save_uploaded_file
-from services.pdf_reader import read_pdf
+
+from services.document_manager import DocumentManager
+from services.rag import ask_question
+
+document_manager = DocumentManager()
 
 st.set_page_config(
     page_title="AI Meeting Assistant",
@@ -8,42 +11,55 @@ st.set_page_config(
     layout="wide",
 )
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+if "pdf_indexed" not in st.session_state:
+    st.session_state.pdf_indexed = False
+
+if "pdf_name" not in st.session_state:
+    st.session_state.pdf_name = None
+
+st.title("🤖 AI Meeting Assistant")
+st.write("Upload een PDF, indexeer het document en stel daarna vragen over de inhoud.")
 
 with st.sidebar:
     st.title("⚙️ Instellingen")
-    st.write("Beheer hier je documenten en AI-instellingen.")
-
-    st.divider()
-
-    st.subheader("📄 Document")
 
     uploaded_file = st.file_uploader(
         "Upload een PDF",
-        type=["pdf"]
+        type=["pdf"],
     )
-
-    st.divider()
-
-    st.subheader("ℹ️ Status")
-    st.success("App actief")
 
     if uploaded_file is not None:
         st.info(f"Geselecteerd bestand: {uploaded_file.name}")
 
-        if st.button("📥 PDF opslaan"):
-            file_path = save_uploaded_file(uploaded_file)
-            pdf_text = read_pdf(file_path)
+        if st.button("📥 PDF opslaan en indexeren"):
+            result = document_manager.process_document(uploaded_file)
 
-            st.success(f"PDF opgeslagen: {file_path}")
-            st.text_area("Uitgelezen tekst", pdf_text,height=300)
+            file_path = result["file_path"]
+            pdf_text = result["pdf_text"]
+            chunk_count = result["chunk_count"]
 
+            st.session_state.pdf_indexed = True
+            st.session_state.pdf_name = uploaded_file.name
 
+            st.success("PDF opgeslagen en geïndexeerd.")
+            st.info(f"Bestand: {file_path.name}")
+            st.info(f"Aantal chunks: {chunk_count}")
 
+            st.text_area(
+                "Uitgelezen tekst",
+                pdf_text,
+                height=300,
+            )
 
-st.title("🤖 AI Meeting Assistant")
-st.write("Analyseer meetings, PDF's en documenten met AI.")
+    st.divider()
 
-st.divider()
+    if st.session_state.pdf_indexed:
+        st.success(f"Actief document: {st.session_state.pdf_name}")
+    else:
+        st.warning("Nog geen PDF geïndexeerd.")
 
 tab_chat, tab_summary, tab_actions = st.tabs(
     ["💬 Chat", "📝 Samenvatting", "✅ Actiepunten"]
@@ -54,32 +70,49 @@ with tab_chat:
 
     user_question = st.text_area(
         "Jouw vraag",
-        placeholder="Bijvoorbeeld: Wat zijn de belangrijkste punten uit dit document?",
+        placeholder="Bijvoorbeeld: Waar gaat dit document over?",
         height=120,
     )
 
     if st.button("Vraag stellen", type="primary"):
-        if uploaded_file is None:
-            st.error("Upload eerst een PDF.")
+        if not st.session_state.pdf_indexed:
+            st.error("Upload en indexeer eerst een PDF.")
         elif not user_question:
             st.error("Typ eerst een vraag.")
         else:
-            st.info("Hier komt straks het AI-antwoord.")
+            with st.spinner("AI zoekt in je document..."):
+                answer = ask_question(user_question)
+
+            st.session_state.chat_history.append(
+                {
+                    "question": user_question,
+                    "answer": answer,
+                }
+            )
+
+    st.divider()
+
+    for chat in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.write(chat["question"])
+
+        with st.chat_message("assistant"):
+            st.write(chat["answer"])
 
 with tab_summary:
     st.subheader("📝 Document samenvatten")
 
     if st.button("Maak samenvatting"):
-        if uploaded_file is None:
-            st.error("Upload eerst een PDF.")
+        if not st.session_state.pdf_indexed:
+            st.error("Upload en indexeer eerst een PDF.")
         else:
-            st.info("Hier komt straks de samenvatting.")
+            st.info("Samenvatting bouwen we in de volgende stap.")
 
 with tab_actions:
     st.subheader("✅ Actiepunten herkennen")
 
     if st.button("Haal actiepunten op"):
-        if uploaded_file is None:
-            st.error("Upload eerst een PDF.")
+        if not st.session_state.pdf_indexed:
+            st.error("Upload en indexeer eerst een PDF.")
         else:
-            st.info("Hier komen straks de actiepunten.")
+            st.info("Actiepunten bouwen we daarna.")

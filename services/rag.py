@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from config import CHAT_MODEL, TOP_K_RESULTS
 
 from services.vector_store import get_vector_store
 
@@ -12,7 +13,7 @@ def ask_question(question: str) -> str:
 
     docs = vector_store.similarity_search(
         query=question,
-        k=3,
+        k=TOP_K_RESULTS,
     )
 
     context = "\n\n".join([doc.page_content for doc in docs])
@@ -33,7 +34,7 @@ Antwoord:
 """
 
     llm = ChatOpenAI(
-        model="gpt-5-mini",
+        model=CHAT_MODEL,
         temperature=0,
     )
 

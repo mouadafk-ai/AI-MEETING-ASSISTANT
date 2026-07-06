@@ -83,13 +83,13 @@ with tab_chat:
             with st.spinner("AI zoekt in je document..."):
                 result = ask_question(user_question)
 
-st.session_state.chat_history.append(
-    {
-        "question": user_question,
-        "answer": result["answer"],
-        "sources": result["sources"],
-    }
-)
+            st.session_state.chat_history.append(
+                {
+                    "question": user_question,
+                    "answer": result["answer"],
+                    "sources": result["sources"],
+                }
+            )
 
     st.divider()
 
@@ -98,14 +98,14 @@ st.session_state.chat_history.append(
             st.write(chat["question"])
 
         with st.chat_message("assistant"):
-    st.write(chat["answer"])
+            st.write(chat["answer"])
 
-    if chat.get("sources"):
-        with st.expander("📚 Bronnen"):
-            for source in chat["sources"]:
-                st.write(
-                    f"📄 {source['source']} (chunk {source['chunk']})"
-                )
+            if chat.get("sources"):
+                with st.expander("📚 Bronnen"):
+                    for source in chat["sources"]:
+                        st.write(
+                            f"📄 {source['source']} (chunk {source['chunk']})"
+                        )
 
 with tab_summary:
     st.subheader("📝 Document samenvatten")

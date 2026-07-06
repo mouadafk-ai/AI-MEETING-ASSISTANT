@@ -1,14 +1,13 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from config import CHAT_MODEL, TOP_K_RESULTS
 
+from config import CHAT_MODEL, TOP_K_RESULTS
 from services.vector_store import get_vector_store
 
 load_dotenv()
 
 
-def ask_question(question: str) -> str:
-
+def ask_question(question: str) -> dict:
     vector_store = get_vector_store()
 
     docs = vector_store.similarity_search(
@@ -38,19 +37,19 @@ Antwoord:
         temperature=0,
     )
 
-response = llm.invoke(prompt)
+    response = llm.invoke(prompt)
 
-sources = []
+    sources = []
 
-for doc in docs:
-    sources.append(
-        {
-            "source": doc.metadata.get("source", "Onbekend"),
-            "chunk": doc.metadata.get("chunk", "-"),
-        }
-    )
+    for doc in docs:
+        sources.append(
+            {
+                "source": doc.metadata.get("source", "Onbekend"),
+                "chunk": doc.metadata.get("chunk", "-"),
+            }
+        )
 
-return {
-    "answer": response.content,
-    "sources": sources,
-}
+    return {
+        "answer": response.content,
+        "sources": sources,
+    }

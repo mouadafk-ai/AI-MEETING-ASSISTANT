@@ -2,6 +2,7 @@ import streamlit as st
 
 from services.document_manager import DocumentManager
 from services.rag import ask_question
+from services.summary import summarize_document
 
 document_manager = DocumentManager()
 
@@ -103,18 +104,19 @@ with tab_chat:
             if chat.get("sources"):
                 with st.expander("📚 Bronnen"):
                     for source in chat["sources"]:
-                        st.write(
-                            f"📄 {source['source']} (chunk {source['chunk']})"
-                        )
+                        st.write(f"📄 {source['source']}")
 
 with tab_summary:
     st.subheader("📝 Document samenvatten")
 
     if st.button("Maak samenvatting"):
         if not st.session_state.pdf_indexed:
-            st.error("Upload en indexeer eerst een PDF.")
+             st.error("Upload en indexeer eerst een PDF.")
         else:
-            st.info("Samenvatting bouwen we in de volgende stap.")
+            with st.spinner("Samenvatting wordt gemaakt..."):
+                summary = summarize_document()
+
+            st.markdown(summary)
 
 with tab_actions:
     st.subheader("✅ Actiepunten herkennen")

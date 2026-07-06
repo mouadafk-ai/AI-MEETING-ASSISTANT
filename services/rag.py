@@ -40,14 +40,18 @@ Antwoord:
     response = llm.invoke(prompt)
 
     sources = []
+    seen_sources = set()
 
     for doc in docs:
-        sources.append(
-            {
-                "source": doc.metadata.get("source", "Onbekend"),
-                "chunk": doc.metadata.get("chunk", "-"),
-            }
-        )
+        source = doc.metadata.get("source", "Onbekend")
+
+        if source not in seen_sources:
+            sources.append(
+                {
+                    "source": source,
+                }
+            )
+            seen_sources.add(source)
 
     return {
         "answer": response.content,

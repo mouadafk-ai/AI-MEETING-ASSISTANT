@@ -1,11 +1,9 @@
 import streamlit as st
 
-from services.document_manager import DocumentManager
-from services.rag import ask_question
-from services.summary import summarize_document
-from services.actions import extract_action_items
-
-document_manager = DocumentManager()
+from components.sidebar import render_sidebar
+from components.chat import render_chat
+from components.summary import render_summary
+from components.actions import render_actions
 
 st.set_page_config(
     page_title="AI Meeting Assistant",
@@ -22,111 +20,23 @@ if "pdf_indexed" not in st.session_state:
 if "pdf_name" not in st.session_state:
     st.session_state.pdf_name = None
 
+if "conversation_id" not in st.session_state:
+    st.session_state.conversation_id = 1
+
 st.title("🤖 AI Meeting Assistant")
-st.write("Upload een PDF, indexeer het document en stel daarna vragen over de inhoud.")
+st.write("Upload een PDF, indexeer het document en stel vragen over de inhoud.")
 
-with st.sidebar:
-    st.title("⚙️ Instellingen")
-
-    uploaded_file = st.file_uploader(
-        "Upload een PDF",
-        type=["pdf"],
-    )
-
-    if uploaded_file is not None:
-        st.info(f"Geselecteerd bestand: {uploaded_file.name}")
-
-        if st.button("📥 PDF opslaan en indexeren"):
-            result = document_manager.process_document(uploaded_file)
-
-            file_path = result["file_path"]
-            pdf_text = result["pdf_text"]
-            chunk_count = result["chunk_count"]
-
-            st.session_state.pdf_indexed = True
-            st.session_state.pdf_name = uploaded_file.name
-
-            st.success("PDF opgeslagen en geïndexeerd.")
-            st.info(f"Bestand: {file_path.name}")
-            st.info(f"Aantal chunks: {chunk_count}")
-
-            st.text_area(
-                "Uitgelezen tekst",
-                pdf_text,
-                height=300,
-            )
-
-    st.divider()
-
-    if st.session_state.pdf_indexed:
-        st.success(f"Actief document: {st.session_state.pdf_name}")
-    else:
-        st.warning("Nog geen PDF geïndexeerd.")
+render_sidebar()
 
 tab_chat, tab_summary, tab_actions = st.tabs(
     ["💬 Chat", "📝 Samenvatting", "✅ Actiepunten"]
 )
 
 with tab_chat:
-    st.subheader("💬 Stel een vraag over je document")
-
-    user_question = st.text_area(
-        "Jouw vraag",
-        placeholder="Bijvoorbeeld: Waar gaat dit document over?",
-        height=120,
-    )
-
-    if st.button("Vraag stellen", type="primary"):
-        if not st.session_state.pdf_indexed:
-            st.error("Upload en indexeer eerst een PDF.")
-        elif not user_question:
-            st.error("Typ eerst een vraag.")
-        else:
-            with st.spinner("AI zoekt in je document..."):
-                result = ask_question(user_question)
-
-            st.session_state.chat_history.append(
-                {
-                    "question": user_question,
-                    "answer": result["answer"],
-                    "sources": result["sources"],
-                }
-            )
-
-    st.divider()
-
-    for chat in st.session_state.chat_history:
-        with st.chat_message("user"):
-            st.write(chat["question"])
-
-        with st.chat_message("assistant"):
-            st.write(chat["answer"])
-
-            if chat.get("sources"):
-                with st.expander("📚 Bronnen"):
-                    for source in chat["sources"]:
-                        st.write(f"📄 {source['source']}")
+    render_chat()
 
 with tab_summary:
-    st.subheader("📝 Document samenvatten")
-
-    if st.button("Maak samenvatting"):
-        if not st.session_state.pdf_indexed:
-             st.error("Upload en indexeer eerst een PDF.")
-        else:
-            with st.spinner("Samenvatting wordt gemaakt..."):
-                summary = summarize_document()
-
-            st.markdown(summary)
+    render_summary()
 
 with tab_actions:
-    st.subheader("✅ Actiepunten herkennen")
-
-    if st.button("Haal actiepunten op"):
-        if not st.session_state.pdf_indexed:
-            st.error("Upload en indexeer eerst een PDF.")
-        else:
-            with st.spinner("Actiepunten worden gezocht..."):
-                actions = extract_action_items()
-
-            st.markdown(actions)
+    render_actions()

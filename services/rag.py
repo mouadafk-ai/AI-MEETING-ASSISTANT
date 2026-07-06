@@ -38,6 +38,19 @@ Antwoord:
         temperature=0,
     )
 
-    response = llm.invoke(prompt)
+response = llm.invoke(prompt)
 
-    return response.content
+sources = []
+
+for doc in docs:
+    sources.append(
+        {
+            "source": doc.metadata.get("source", "Onbekend"),
+            "chunk": doc.metadata.get("chunk", "-"),
+        }
+    )
+
+return {
+    "answer": response.content,
+    "sources": sources,
+}

@@ -81,14 +81,15 @@ with tab_chat:
             st.error("Typ eerst een vraag.")
         else:
             with st.spinner("AI zoekt in je document..."):
-                answer = ask_question(user_question)
+                result = ask_question(user_question)
 
-            st.session_state.chat_history.append(
-                {
-                    "question": user_question,
-                    "answer": answer,
-                }
-            )
+st.session_state.chat_history.append(
+    {
+        "question": user_question,
+        "answer": result["answer"],
+        "sources": result["sources"],
+    }
+)
 
     st.divider()
 
@@ -97,7 +98,14 @@ with tab_chat:
             st.write(chat["question"])
 
         with st.chat_message("assistant"):
-            st.write(chat["answer"])
+    st.write(chat["answer"])
+
+    if chat.get("sources"):
+        with st.expander("📚 Bronnen"):
+            for source in chat["sources"]:
+                st.write(
+                    f"📄 {source['source']} (chunk {source['chunk']})"
+                )
 
 with tab_summary:
     st.subheader("📝 Document samenvatten")

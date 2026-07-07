@@ -7,10 +7,10 @@ def render_actions():
     st.subheader("✅ Actiepunten herkennen")
 
     if st.button("Haal actiepunten op"):
-        if not st.session_state.pdf_indexed:
+        if not st.session_state.pdf_indexed or not st.session_state.pdf_name:
             st.error("Upload en indexeer eerst een PDF.")
         else:
             with st.spinner("Actiepunten worden gezocht..."):
-                actions = extract_action_items()
+                actions = extract_action_items(st.session_state.pdf_name)
 
             st.markdown(actions)

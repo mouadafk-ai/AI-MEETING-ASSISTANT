@@ -1,45 +1,44 @@
 import streamlit as st
-
 from services.rag import ask_question
 
 
 def render_chat():
-    st.subheader("💬 Stel een vraag over je document")
-    st.caption(f"Gesprek #{st.session_state.conversation_id}")
+    st.subheader("💬 Chat")
 
-    user_question = st.text_area(
-        "Jouw vraag",
-        placeholder="Bijvoorbeeld: Waar gaat dit document over?",
-        height=120,
-    )
+    if not st.session_state.pdf_indexed or not st.session_state.pdf_name:
+        st.info("Upload en indexeer eerst een PDF in de sidebar.")
+        return
 
-    if st.button("Vraag stellen", type="primary"):
-        if not st.session_state.pdf_indexed:
-            st.error("Upload en indexeer eerst een PDF.")
-        elif not user_question:
-            st.error("Typ eerst een vraag.")
-        else:
-            with st.spinner("AI zoekt in je document..."):
-                result = ask_question(user_question)
+    chat_box = st.container(height=500)
 
-            st.session_state.chat_history.append(
-                {
-                    "question": user_question,
-                    "answer": result["answer"],
-                    "sources": result["sources"],
-                }
+    with chat_box:
+        for chat in st.session_state.chat_history:
+            with st.chat_message("user"):
+                st.write(chat["question"])
+
+            with st.chat_message("assistant"):
+                st.write(chat["answer"])
+
+                if chat.get("sources"):
+                    with st.expander("📚 Bronnen"):
+                        for source in chat["sources"]:
+                            st.write(f"📄 {source['source']}")
+
+    prompt = st.chat_input("Stel een vraag over je document...")
+
+    if prompt:
+        with st.spinner("AI zoekt in je document..."):
+            result = ask_question(
+                question=prompt,
+                source=st.session_state.pdf_name,
             )
 
-    st.divider()
+        st.session_state.chat_history.append(
+            {
+                "question": prompt,
+                "answer": result["answer"],
+                "sources": result["sources"],
+            }
+        )
 
-    for chat in st.session_state.chat_history:
-        with st.chat_message("user"):
-            st.write(chat["question"])
-
-        with st.chat_message("assistant"):
-            st.write(chat["answer"])
-
-            if chat.get("sources"):
-                with st.expander("📚 Bronnen"):
-                    for source in chat["sources"]:
-                        st.write(f"📄 {source['source']}")
+        st.rerun()

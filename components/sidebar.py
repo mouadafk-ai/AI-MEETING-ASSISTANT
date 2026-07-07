@@ -1,9 +1,11 @@
 import streamlit as st
 
 from services.document_manager import DocumentManager
+from services.conversation_manager import ConversationManager
 
 
 document_manager = DocumentManager()
+conversation_manager = ConversationManager()
 
 
 def render_sidebar():
@@ -27,6 +29,7 @@ def render_sidebar():
 
                 st.session_state.pdf_indexed = True
                 st.session_state.pdf_name = uploaded_file.name
+                st.session_state.chat_history = []
 
                 st.success("PDF opgeslagen en geïndexeerd.")
                 st.info(f"Bestand: {file_path.name}")
@@ -48,6 +51,11 @@ def render_sidebar():
         st.divider()
 
         if st.button("🗑️ Nieuw gesprek"):
+            conversation = conversation_manager.create_conversation()
+
+            st.session_state.conversation_id = conversation["id"]
             st.session_state.chat_history = []
-            st.session_state.conversation_id += 1
+            st.session_state.pdf_indexed = False
+            st.session_state.pdf_name = None
+
             st.rerun()

@@ -39,9 +39,7 @@ class ConversationManager:
         return conversation
 
     def get_conversation(self, conversation_id):
-        conversations = self.load()
-
-        for conversation in conversations:
+        for conversation in self.load():
             if conversation["id"] == conversation_id:
                 return conversation
 
@@ -59,10 +57,9 @@ class ConversationManager:
         self.save(conversations)
 
     def delete_conversation(self, conversation_id):
-        conversations = self.load()
         conversations = [
             conversation
-            for conversation in conversations
+            for conversation in self.load()
             if conversation["id"] != conversation_id
         ]
         self.save(conversations)
@@ -91,6 +88,9 @@ class ConversationManager:
             }
         )
 
+        if conversation["title"] == "Nieuwe chat" and role == "user":
+            conversation["title"] = content[:45]
+
         self.update_conversation(conversation)
 
     def add_document(self, conversation_id, document):
@@ -100,6 +100,10 @@ class ConversationManager:
             return
 
         conversation["documents"].append(document)
+
+        if conversation["title"] == "Nieuwe chat":
+            conversation["title"] = document["name"]
+
         self.update_conversation(conversation)
 
     def all(self):

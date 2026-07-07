@@ -1,11 +1,76 @@
 [
     {
+        "id": "39c6d02c",
+        "title": "Nieuwe chat",
+        "messages": [
+            {
+                "role": "user",
+                "content": "geef me alle darums",
+                "sources": [],
+                "created_at": "2026-07-07T03:30:17"
+            },
+            {
+                "role": "assistant",
+                "content": "Het woord \"darums\" staat niet in de gegeven context, dus ik weet niet wat je daarmee bedoelt. Bedoel je misschien \"datums\"? In de context staat één datum: 04-07-2026. Kun je aangeven wat je precies bedoelt?",
+                "sources": [
+                    {
+                        "source": "F2022726.pdf"
+                    }
+                ],
+                "created_at": "2026-07-07T03:30:17"
+            },
+            {
+                "role": "user",
+                "content": "datums",
+                "sources": [],
+                "created_at": "2026-07-07T03:30:42"
+            },
+            {
+                "role": "assistant",
+                "content": "- Factuurdatum: 04-07-2026.\n\n- Er staat geen expliciete vervaldatum; wel \"Gelieve te betalen binnen 30 dagen\". Op basis daarvan zou de vervaldatum 03-08-2026 zijn (30 dagen na 04-07-2026).",
+                "sources": [
+                    {
+                        "source": "F2022726.pdf"
+                    }
+                ],
+                "created_at": "2026-07-07T03:30:42"
+            }
+        ],
+        "documents": [
+            {
+                "id": "047bd873",
+                "name": "F2022726.pdf",
+                "chunks": 1,
+                "uploaded_at": "2026-07-07T03:30:00"
+            }
+        ],
+        "created_at": "2026-07-07T03:29:51",
+        "updated_at": "2026-07-07T03:30:42"
+    },
+    {
         "id": "6b9047fd",
         "title": "Nieuwe chat",
-        "messages": [],
+        "messages": [
+            {
+                "role": "user",
+                "content": "welke namen staan er in het document",
+                "sources": [],
+                "created_at": "2026-07-07T03:22:33"
+            },
+            {
+                "role": "assistant",
+                "content": "De namen die in het document staan:\n- Fast Motors B.V.\n- Johan van Hasseltweg\n- Mouad",
+                "sources": [
+                    {
+                        "source": "F2022726.pdf"
+                    }
+                ],
+                "created_at": "2026-07-07T03:22:33"
+            }
+        ],
         "documents": [],
         "created_at": "2026-07-07T03:17:30",
-        "updated_at": "2026-07-07T03:17:30"
+        "updated_at": "2026-07-07T03:22:33"
     },
     {
         "id": "52f1ce90",

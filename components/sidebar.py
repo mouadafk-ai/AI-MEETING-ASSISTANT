@@ -26,6 +26,12 @@ def render_sidebar():
                 file_path = result["file_path"]
                 pdf_text = result["pdf_text"]
                 chunk_count = result["chunk_count"]
+                document = result["document"]
+
+                conversation_manager.add_document(
+                    st.session_state.conversation_id,
+                    document,
+                )
 
                 st.session_state.pdf_indexed = True
                 st.session_state.pdf_name = uploaded_file.name

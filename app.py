@@ -9,19 +9,32 @@ from services.conversation_manager import ConversationManager
 conversation_manager = ConversationManager()
 
 st.set_page_config(
-    page_title="AI Meeting Assistant",
+    page_title="AI Document Assistant",
     page_icon="🤖",
     layout="wide",
 )
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
 
-if "pdf_indexed" not in st.session_state:
-    st.session_state.pdf_indexed = False
+def messages_to_chat_history(messages):
+    chat_history = []
+    pending_question = None
 
-if "pdf_name" not in st.session_state:
-    st.session_state.pdf_name = None
+    for message in messages:
+        if message["role"] == "user":
+            pending_question = message["content"]
+
+        elif message["role"] == "assistant" and pending_question:
+            chat_history.append(
+                {
+                    "question": pending_question,
+                    "answer": message["content"],
+                    "sources": message.get("sources", []),
+                }
+            )
+            pending_question = None
+
+    return chat_history
+
 
 if "conversation_id" not in st.session_state:
     conversations = conversation_manager.all()
@@ -32,11 +45,35 @@ if "conversation_id" not in st.session_state:
         conversation = conversation_manager.create_conversation()
         st.session_state.conversation_id = conversation["id"]
 
+conversation = conversation_manager.get_conversation(
+    st.session_state.conversation_id
+)
+
+if conversation is None:
+    conversation = conversation_manager.create_conversation()
+    st.session_state.conversation_id = conversation["id"]
+
+documents = conversation.get("documents", [])
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = messages_to_chat_history(
+        conversation.get("messages", [])
+    )
+
+if "pdf_name" not in st.session_state:
+    if documents:
+        st.session_state.pdf_name = documents[-1]["name"]
+    else:
+        st.session_state.pdf_name = None
+
+if "pdf_indexed" not in st.session_state:
+    st.session_state.pdf_indexed = bool(st.session_state.pdf_name)
+
 # Sidebar
 render_sidebar()
 
 # Header
-st.title("🤖 AI Meeting Assistant")
+st.title("🤖 AI Document Assistant")
 st.caption("Chat met PDF-documenten, maak samenvattingen en haal actiepunten op.")
 
 st.divider()
